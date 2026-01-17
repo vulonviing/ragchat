@@ -1,5 +1,9 @@
 # BuildRAG
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2c66433e-beb5-43aa-ab26-11dbbc77dd68" width="1200">
+</p>
+
 **BuildRAG** is a local, production-ready **Retrieval-Augmented Generation (RAG)** workspace built with **Streamlit**, **Ollama**, and **Chroma**.
 
 It lets you upload documents, index them locally, and chat with an LLM that answers questions **grounded in your own data**, with sources.
