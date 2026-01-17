@@ -1,12 +1,15 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Union
+import hashlib
 
-from langchain_community.document_loaders import PyPDFLoader, TextLoader, DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_core.documents import Document
 
 from .config import RagConfig
+
+PathLike = Union[str, Path]
 
 @dataclass
 class DocumentManager:
@@ -17,6 +20,20 @@ class DocumentManager:
         for ext in ("*.pdf", "*.txt", "*.md"):
             files.extend(self.cfg.docs_dir.rglob(ext))
         return sorted(files)
+
+    def make_doc_id(self, file_path: Path) -> str:
+        # stable id: relative path inside documents/
+        return str(file_path.resolve().relative_to(self.cfg.docs_dir.resolve()))
+
+    def hash_bytes(self, data: bytes) -> str:
+        return hashlib.sha256(data).hexdigest()
+
+    def hash_file(self, file_path: Path) -> str:
+        h = hashlib.sha256()
+        with file_path.open("rb") as f:
+            for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                h.update(chunk)
+        return h.hexdigest()
 
     def save_upload_bytes(self, filename: str, data: bytes) -> Path:
         out_path = self.cfg.docs_dir / filename
@@ -32,25 +49,31 @@ class DocumentManager:
         out_path.write_bytes(data)
         return out_path
 
-    def delete_files(self, paths: Iterable[str]) -> int:
+    def delete_files(self, paths: Iterable[PathLike]) -> int:
         deleted = 0
         for p in paths:
             try:
-                Path(p).unlink()
-                deleted += 1
+                pth = Path(p)
+                # Eğer sadece "foo.pdf" gibi geldiyse documents/ altına tamamla
+                if not pth.is_absolute():
+                    candidate = self.cfg.docs_dir / pth
+                    if candidate.exists():
+                        pth = candidate
+                if pth.exists():
+                    pth.unlink()
+                    deleted += 1
             except Exception:
                 pass
         return deleted
 
-    def load_langchain_documents(self) -> List[Document]:
-        docs: list[Document] = []
-
-        pdf_loader = DirectoryLoader(str(self.cfg.docs_dir), glob="**/*.pdf", loader_cls=PyPDFLoader)
-        docs.extend(pdf_loader.load())
-
-        txt_loader = DirectoryLoader(str(self.cfg.docs_dir), glob="**/*.txt", loader_cls=TextLoader)
-        md_loader = DirectoryLoader(str(self.cfg.docs_dir), glob="**/*.md", loader_cls=TextLoader)
-        docs.extend(txt_loader.load())
-        docs.extend(md_loader.load())
-
-        return docs
+    def load_langchain_documents_for_file(self, file_path: Path) -> List[Document]:
+        """
+        Load one file and return LangChain Documents (with metadata like source/page).
+        """
+        suffix = file_path.suffix.lower()
+        if suffix == ".pdf":
+            return PyPDFLoader(str(file_path)).load()
+        elif suffix in (".txt", ".md"):
+            return TextLoader(str(file_path)).load()
+        else:
+            return []

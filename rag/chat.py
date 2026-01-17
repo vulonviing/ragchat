@@ -6,7 +6,7 @@ from langchain_ollama import OllamaLLM
 from langchain.prompts import PromptTemplate
 
 from .config import RagConfig
-from .retrieval import Retriever
+from .retrieval import Retriever, RetrievalParams, RetrievedChunk
 
 RAG_PROMPT = PromptTemplate(
     input_variables=["context", "question"],
@@ -25,16 +25,16 @@ class ChatEngine:
     cfg: RagConfig
     retriever: Retriever
 
-    def answer(self, question: str, k: int) -> Tuple[str, List[str]]:
+    def answer(self, question: str, params: RetrievalParams):
         if not question.strip():
-            return ("Question cannot be empty.", [])
+            return ("Question cannot be empty.", [], [])
 
-        context, sources = self.retriever.retrieve(question, k=k)
+        context, sources, debug_chunks = self.retriever.retrieve(question, params=params)
         if not context.strip():
-            return ("No index found or no relevant context. Please embed/index documents first.", [])
+            return ("No index found or no relevant context. Please embed/index documents first.", [], debug_chunks)
 
         llm = OllamaLLM(model=self.cfg.llm_model, temperature=0.2)
         prompt_text = RAG_PROMPT.format(context=context, question=question)
         answer = llm.invoke(prompt_text)
 
-        return (answer, sources)
+        return (answer, sources, debug_chunks)
