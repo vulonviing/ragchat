@@ -10,7 +10,7 @@ RetrievalMode = Literal["similarity", "mmr", "threshold"]
 @dataclass
 class RetrievalParams:
     mode: RetrievalMode = "similarity"
-    k: int = 9
+    k: int = 4
     fetch_k: int = 20          # MMR
     score_threshold: float = 0.35  # Threshold (0-1)
 
