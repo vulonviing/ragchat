@@ -10,16 +10,16 @@ RetrievalMode = Literal["similarity", "mmr", "threshold"]
 @dataclass
 class RetrievalParams:
     mode: RetrievalMode = "similarity"
-    k: int = 4
-    fetch_k: int = 20          # MMR için
-    score_threshold: float = 0.35  # Threshold için (0-1)
+    k: int = 9
+    fetch_k: int = 20          # MMR
+    score_threshold: float = 0.35  # Threshold (0-1)
 
 @dataclass
 class RetrievedChunk:
     text: str
     source: str
     page: Optional[int]
-    score: Optional[float]  # 0-1 relevance score (varsa)
+    score: Optional[float]  # 0-1 relevance score
 
 @dataclass
 class Retriever:

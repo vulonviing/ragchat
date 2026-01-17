@@ -11,7 +11,7 @@ from .retrieval import Retriever, RetrievalParams, RetrievedChunk
 RAG_PROMPT = PromptTemplate(
     input_variables=["context", "question"],
     template=(
-        "You are a careful assistant. Answer the user's question using ONLY the context.\n"
+        "You are a careful RAG assistant. Answer the user's question using ONLY the context.\n"
         "Always answer in English.\n"
         "If the context does not contain the answer, say: \"I couldn't find that in the provided documents.\"\n\n"
         "Question: {question}\n\n"

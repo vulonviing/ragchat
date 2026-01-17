@@ -54,7 +54,6 @@ class DocumentManager:
         for p in paths:
             try:
                 pth = Path(p)
-                # Eğer sadece "foo.pdf" gibi geldiyse documents/ altına tamamla
                 if not pth.is_absolute():
                     candidate = self.cfg.docs_dir / pth
                     if candidate.exists():
