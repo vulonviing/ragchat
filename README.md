@@ -18,7 +18,20 @@ It lets you upload documents, index them locally, and chat with an LLM that answ
 - **Embeddings:** nomic-embed-text  
 - **Vector DB:** Chroma  
 
+## 📦 Installation
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+ollama serve
+streamlit run app.py
+```
+
 ## 🚀 Run
 ```bash
 ollama serve
 streamlit run app.py
+```
